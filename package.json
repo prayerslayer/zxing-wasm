@@ -4,6 +4,10 @@
   "description": "zxing-cpp in wasm",
   "main": "index.js",
   "scripts": {
+    "clean": "rm -rf dist",
+    "build-zxing": "cd zxing && ./build.sh",
+    "build-webpack": "webpack",
+    "build": "npm run clean && mkdir dist && npm run build-zxing && npm run build-webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,6 +21,9 @@
   },
   "homepage": "https://github.com/prayerslayer/zxing-wasm#readme",
   "devDependencies": {
+    "exports-loader": "^0.6.4",
+    "file-loader": "^1.1.6",
+    "uglifyjs-webpack-plugin": "^1.1.5",
     "wasm-loader": "^1.1.0",
     "webpack": "^3.10.0"
   }
