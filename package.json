@@ -15,7 +15,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/prayerslayer/zxing-wasm.git"
   },
-  "author": "",
+  "author": "Nikolaus Piccolotto <prayerslayer@gmail.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/prayerslayer/zxing-wasm/issues"
