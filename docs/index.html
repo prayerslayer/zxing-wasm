@@ -32,6 +32,7 @@
     <h1>zxing-wasm Demo</h1>
     <p>Choose a picture with or without QR code:</p>
     <input type="file" accept="image/*">
+    <button>Start webcam instead</button>
     <div></div>
     <canvas width="400" height="300"></canvas>
     <img crossorigin="anonymous" alt="">
@@ -40,6 +41,7 @@
 
   <script>
     const zxing = window["zxing-wasm"];
+    const btn = document.querySelector('button')
     const div = document.querySelector("div")
     const file = document.querySelector("input")
     const video = document.querySelector("video")
@@ -48,6 +50,7 @@
     const ctx = canvas.getContext("2d");
     let W = 0;
     let H = 0;
+    let buf;
 
 
     file.addEventListener("change", e => {
@@ -57,18 +60,18 @@
       reader.readAsDataURL(f);
     });
 
-    function readFile() {
-
-    }
 
     function toGrayScale(frame) {
       // A frame has four channels: red, green, blue, alpha
       // Represented in the array as RGBARGBARGBA
-      const result = []
-      for (let i = 0; i < frame.length; i += 4) {
-        result.push((frame[i] + frame[i + 1] + frame[i + 2]) / 3)
+      let j = 0;
+      for (let i = 0; i < frame.length; i++) {
+        if (i % 4 === 0) {
+          buf[j] = (frame[i] + frame[i + 1] + frame[i + 2]) / 3;
+          j++;
+        }
       }
-      return new Uint8Array(result)
+      return buf;
     }
 
     function paintAndDetect(src, singlePass = true) {
@@ -82,35 +85,39 @@
             div.textContent = result
           }
           if (!singlePass) {
-            requestIdleCallback(() => paintAndDetect(src))
+            setTimeout(() => paintAndDetect(src, false), 0)
           }
         })
     }
 
+    function initBuf(w, h) {
+      W = w;
+      H = h;
+      canvas.width = W;
+      canvas.height = H;
+      buf = new Uint8Array(new Array(W * H).fill(0).map(_ => 0))
+    }
 
     img.addEventListener("load", () => {
-      W = img.width
-      H = img.height
-      canvas.width = W
-      canvas.height = H
-      console.log('width', W, 'height', H, 'total pixels', W * H);
+      initBuf(img.width, img.height)
       paintAndDetect(img)
     });
 
-    // // Code to run detection via webcam
-    // window.navigator.mediaDevices.getUserMedia({ video: true }).then(mediaStream => {
-    //   video.srcObject = mediaStream;
+    btn.addEventListener('click', () => {
+      canvas.style='transform: scale(-1, 1);';
+      // // Code to run detection via webcam
+      window.navigator.mediaDevices.getUserMedia({ video: true }).then(mediaStream => {
+        video.srcObject = mediaStream;
 
-    //   video.onloadedmetadata = () => {
-    //     W = video.videoWidth;
-    //     H = video.videoHeight;
-    //     canvas.width = W
-    //     canvas.height = H
-    //     setTimeout(() => paintAndDetect(video), 0)
-    //   }
+        video.onloadedmetadata = () => {
+          initBuf(video.videoWidth, video.videoHeight);
+          setTimeout(() => paintAndDetect(video, false), 0)
+        }
 
-    // })
-    //   .catch(e => { video.stop(); alert(e); });
+      })
+        .catch(e => { video.stop(); alert(e); });
+    })
+
   </script>
 </body>
 
